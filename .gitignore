@@ -19,3 +19,17 @@
 
 # Go workspace file
 go.work
+
+# Generated binary
+haversine-processor
+gohaversineprocessor
+
+# Large files
+coordinates_10000.json
+coordinates_100000.json
+coordinates_1000000.json
+coordinates_10000000.json
+answers_10000.f64
+answers_100000.f64
+answers_1000000.f64
+answers_10000000.f64
