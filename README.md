@@ -1,7 +1,5 @@
 # gohaversineprocessor
 
-# gohaversinegenerator
-
 Haversine points processor.
 
 Built as part of the [Computer, Enhance!](https://www.computerenhance.com/) 
