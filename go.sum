@@ -2,3 +2,5 @@ github.com/fcassin/gohaversine v1.0.1 h1:tR7nL1yYkgnyO/Rj87r+DnOekX9C7W5xXBRuvmb
 github.com/fcassin/gohaversine v1.0.1/go.mod h1:VC9HRAsbM3lu09SssXJrkqDyo5rX+zjiUET/sLN7EoQ=
 github.com/fcassin/gojson v1.0.0 h1:QAyAF1ecM1uTx1krj/nV09rtiucfR+JtY0kXhWCopE0=
 github.com/fcassin/gojson v1.0.0/go.mod h1:UgjAZDn2qKbb2lt5pnBOaXPlVUtsMO6CDJI9KXTs6P4=
+github.com/fcassin/gotimer v1.0.0 h1:NjBD+00cgJfDKbTOPdTjPKQAmzX752r8G/fbij0lo+k=
+github.com/fcassin/gotimer v1.0.0/go.mod h1:PxSxUdVdrwcsAVpOZZoRO0FJHWfM3aaJIgG5NU0Rlu4=
