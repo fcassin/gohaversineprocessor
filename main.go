@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math"
 	"os"
 
@@ -13,12 +12,8 @@ import (
 	timer "github.com/fcassin/gotimer/timer"
 )
 
-var startTimer, startupTimer, readTimer, parseTimer, sumTimer,
-	miscOutputTimer, cpuFrequency, binaryTimer int64
-
 func main() {
-	startTimer = timer.ReadCPUTimer()
-	cpuFrequency = timer.GetCPUTimerFreq(100)
+	timer.Start("startup")
 
 	if len(os.Args) < 2 || len(os.Args) > 3 {
 		fmt.Println("Usage: haversine-processor [coordinates.json]")
@@ -26,7 +21,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	startupTimer = timer.ReadCPUTimer()
+	timer.Stop("startup")
 
 	var err error
 	var jsonAverage float64
@@ -44,23 +39,27 @@ func jsonComputation(name string) (average float64, err error) {
 	var file *os.File
 	var rawBytes []byte
 
+	timer.Start("read")
+
 	file, err = os.Open(name)
 	if err != nil {
 		return
 	}
 	defer file.Close()
 
-	rawBytes, err = ioutil.ReadAll(file)
+	rawBytes, err = io.ReadAll(file)
 	if err != nil {
 		return
 	}
 
-	readTimer = timer.ReadCPUTimer()
+	timer.Stop("read")
+	timer.Start("parse")
 
 	var pairs haversine.Pairs
 	json.Unmarshall(rawBytes, &pairs)
 
-	parseTimer = timer.ReadCPUTimer()
+	timer.Stop("parse")
+	timer.Start("sum")
 
 	var sum float64
 
@@ -76,7 +75,7 @@ func jsonComputation(name string) (average float64, err error) {
 
 	average = sum / float64(len(pairs.Pairs))
 
-	sumTimer = timer.ReadCPUTimer()
+	timer.Stop("sum")
 
 	return
 }
@@ -120,9 +119,8 @@ func output(jsonAverage float64) {
 
 	fmt.Printf("Haversine average: %f\n", jsonAverage)
 
-	miscOutputTimer = timer.ReadCPUTimer()
-
 	if len(os.Args) == 3 {
+		timer.Start("binary")
 		var binaryAverage float64
 
 		binaryAverage, err = binaryComputation(os.Args[2])
@@ -133,42 +131,12 @@ func output(jsonAverage float64) {
 		fmt.Printf("Reference average: %f\n", binaryAverage)
 		fmt.Printf("Difference       : %f\n", jsonAverage-binaryAverage)
 
-		binaryTimer = timer.ReadCPUTimer()
+		timer.Stop("binary")
 	}
 
 	outputTimers()
 }
 
 func outputTimers() {
-	var totalRuntime, startupRuntime, readRuntime, parseRuntime, sumRuntime,
-		miscOutputRuntime, binaryRuntime, cpuFrequencyMs int64
-	totalRuntime = binaryTimer - startTimer
-	startupRuntime = startupTimer - startTimer
-	readRuntime = readTimer - startupTimer
-	parseRuntime = parseTimer - readTimer
-	sumRuntime = sumTimer - parseTimer
-	miscOutputRuntime = miscOutputTimer - sumTimer
-	binaryRuntime = binaryTimer - miscOutputTimer
-	cpuFrequencyMs = cpuFrequency / 1000
-
-	var totalDuration, startupDuration, readDuration, parseDuration, sumDuration,
-		miscOutputDuration, binaryDuration float64
-
-	totalDuration = float64(totalRuntime) / float64(cpuFrequencyMs)
-	startupDuration = float64(startupRuntime) / float64(cpuFrequencyMs)
-	readDuration = float64(readRuntime) / float64(cpuFrequencyMs)
-	parseDuration = float64(parseRuntime) / float64(cpuFrequencyMs)
-	sumDuration = float64(sumRuntime) / float64(cpuFrequencyMs)
-	miscOutputDuration = float64(miscOutputRuntime) / float64(cpuFrequencyMs)
-	binaryDuration = float64(binaryRuntime) / float64(cpuFrequencyMs)
-
-	fmt.Println()
-	fmt.Printf("Total time: %10.3fms (CPU freq %d)\n", totalDuration, cpuFrequency)
-	fmt.Printf("     Startup: %10.3fms (%5.2f%%)\n", startupDuration, 100*startupDuration/totalDuration)
-	fmt.Printf("        Read: %10.3fms (%5.2f%%)\n", readDuration, 100*readDuration/totalDuration)
-	fmt.Printf("       Parse: %10.3fms (%5.2f%%)\n", parseDuration, 100*parseDuration/totalDuration)
-	fmt.Printf("         Sum: %10.3fms (%5.2f%%)\n", sumDuration, 100*sumDuration/totalDuration)
-	fmt.Printf("      Binary: %10.3fms (%5.2f%%)\n", binaryDuration, 100*binaryDuration/totalDuration)
-	fmt.Printf("  MiscOutput: %10.3fms (%5.2f%%)\n", miscOutputDuration, 100*miscOutputDuration/totalDuration)
-
+	timer.Output()
 }
